@@ -1,0 +1,144 @@
+#include <iostream>
+#include <vector>
+#include <queue>
+#include <limits>
+#include <stack>
+#include <unordered_map>
+
+using namespace std;
+
+const int INF = numeric_limits<int>::max();
+
+// Function to find the shortest path from a source airport using Dijkstra's algorithm
+void dijkstra(const vector<vector<pair<int, int>>>& graph, int source, int destination, int n, const vector<string>& cities) {
+    vector<int> distance(n, INF);  // Distance from source to each airport
+    vector<int> previous(n, -1);   // To store the previous node in the shortest path
+    priority_queue<pair<int, int>, vector<pair<int, int>>, greater<pair<int, int>>> pq;
+    
+    distance[source] = 0;
+    pq.push({0, source});
+    
+    while (!pq.empty()) {
+        int dist = pq.top().first;
+        int u = pq.top().second;
+        pq.pop();
+        
+        if (dist > distance[u]) continue;
+        
+        for (const auto& neighbor : graph[u]) {
+            int v = neighbor.first;
+            int weight = neighbor.second;
+            
+            if (distance[u] + weight < distance[v]) {
+                distance[v] = distance[u] + weight;
+                previous[v] = u;
+                pq.push({distance[v], v});
+            }
+        }
+    }
+    
+    if (distance[destination] == INF) {
+        cout << "There is no path from " << cities[source] << " to " << cities[destination] << endl;
+    } else {
+        cout << "The shortest distance from " << cities[source] << " to " << cities[destination] 
+             << " is " << distance[destination] << endl;
+        
+        // Reconstruct the path
+        stack<int> path;
+        for (int at = destination; at != -1; at = previous[at]) {
+            path.push(at);
+        }
+        
+        cout << "Path: ";
+        while (!path.empty()) {
+            cout << cities[path.top()];
+            path.pop();
+            if (!path.empty()) cout << " -> ";
+        }
+        cout << endl;
+    }
+}
+
+int main() {
+    int n = 14; // Updated number of airports (cities)
+    
+    vector<string> cities = {
+        "Delhi", "Jaipur", "Lucknow", "Mumbai", "Ahmedabad",
+        "Pune", "Bangalore", "Hyderabad", "Chennai", "Kolkata",
+        "Chandigarh", "Surat", "Indore", "Trichy"
+    };
+    
+    unordered_map<string, int> cityIndex;
+    for (int i = 0; i < n; ++i) {
+        cityIndex[cities[i]] = i;
+    }
+    
+    vector<vector<pair<int, int>>> graph(n);
+    
+    // Adding edges between airports (cities)
+    graph[cityIndex["Delhi"]].push_back({cityIndex["Jaipur"], 5});
+    graph[cityIndex["Delhi"]].push_back({cityIndex["Lucknow"], 8});
+    graph[cityIndex["Jaipur"]].push_back({cityIndex["Delhi"], 5});
+    graph[cityIndex["Jaipur"]].push_back({cityIndex["Ahmedabad"], 6});
+    graph[cityIndex["Jaipur"]].push_back({cityIndex["Mumbai"], 8});
+    graph[cityIndex["Lucknow"]].push_back({cityIndex["Delhi"], 8});
+    graph[cityIndex["Lucknow"]].push_back({cityIndex["Kolkata"], 10});
+    graph[cityIndex["Mumbai"]].push_back({cityIndex["Pune"], 2});
+    graph[cityIndex["Mumbai"]].push_back({cityIndex["Ahmedabad"], 4});
+    graph[cityIndex["Mumbai"]].push_back({cityIndex["Jaipur"], 8});
+    graph[cityIndex["Ahmedabad"]].push_back({cityIndex["Jaipur"], 6});
+    graph[cityIndex["Ahmedabad"]].push_back({cityIndex["Mumbai"], 4});
+    graph[cityIndex["Ahmedabad"]].push_back({cityIndex["Pune"], 7});
+    graph[cityIndex["Pune"]].push_back({cityIndex["Mumbai"], 2});
+    graph[cityIndex["Pune"]].push_back({cityIndex["Bangalore"], 6});
+    graph[cityIndex["Pune"]].push_back({cityIndex["Hyderabad"], 8});
+    graph[cityIndex["Bangalore"]].push_back({cityIndex["Pune"], 6});
+    graph[cityIndex["Bangalore"]].push_back({cityIndex["Hyderabad"], 4});
+    graph[cityIndex["Bangalore"]].push_back({cityIndex["Chennai"], 5});
+    graph[cityIndex["Hyderabad"]].push_back({cityIndex["Pune"], 8});
+    graph[cityIndex["Hyderabad"]].push_back({cityIndex["Bangalore"], 4});
+    graph[cityIndex["Hyderabad"]].push_back({cityIndex["Chennai"], 5});
+    graph[cityIndex["Chennai"]].push_back({cityIndex["Bangalore"], 5});
+    graph[cityIndex["Chennai"]].push_back({cityIndex["Hyderabad"], 5});
+    graph[cityIndex["Chennai"]].push_back({cityIndex["Kolkata"], 8});
+    graph[cityIndex["Kolkata"]].push_back({cityIndex["Lucknow"], 10});
+    graph[cityIndex["Kolkata"]].push_back({cityIndex["Chennai"], 8});
+    
+    // Adding new edges for the new cities
+    graph[cityIndex["Delhi"]].push_back({cityIndex["Chandigarh"], 3});
+    graph[cityIndex["Chandigarh"]].push_back({cityIndex["Delhi"], 3});
+    graph[cityIndex["Surat"]].push_back({cityIndex["Mumbai"], 6});
+    graph[cityIndex["Indore"]].push_back({cityIndex["Mumbai"], 5});
+    graph[cityIndex["Jaipur"]].push_back({cityIndex["Chandigarh"], 4});
+    graph[cityIndex["Jaipur"]].push_back({cityIndex["Surat"], 7});
+    graph[cityIndex["Indore"]].push_back({cityIndex["Bangalore"], 9});
+    graph[cityIndex["Trichy"]].push_back({cityIndex["Chennai"], 6});  // Adding Trichy to Chennai
+    graph[cityIndex["Chennai"]].push_back({cityIndex["Trichy"], 6});  // Adding Chennai to Trichy
+
+    cout << "List of all cities:" << endl;
+    for (const auto& city : cities) {
+        cout << "- " << city << endl;
+    }
+    cout << endl;
+
+    string sourceCity, destinationCity;
+    
+    cout << "Enter the source city (e.g., Delhi): ";
+    cin >> sourceCity;
+    
+    cout << "Enter the destination city (e.g., Mumbai): ";
+    cin >> destinationCity;
+    
+    if (cityIndex.find(sourceCity) == cityIndex.end() || cityIndex.find(destinationCity) == cityIndex.end()) {
+        cout << "Invalid city name. Please enter a valid Indian city from the list." << endl;
+        return 1;
+    }
+    
+    int source = cityIndex[sourceCity];
+    int destination = cityIndex[destinationCity];
+    
+    dijkstra(graph, source, destination, n, cities);
+    
+    return 0;
+}
+
