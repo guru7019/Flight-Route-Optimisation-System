@@ -1,0 +1,111 @@
+import heapq
+import sys
+
+INF = sys.maxsize
+
+def dijkstra(graph, source, destination, cities):
+    n = len(cities)
+    distance = [INF] * n
+    previous = [-1] * n
+    pq = []
+
+    distance[source] = 0
+    heapq.heappush(pq, (0, source))
+
+    while pq:
+        dist, u = heapq.heappop(pq)
+
+        if dist > distance[u]:
+            continue
+
+        for v, weight in graph[u]:
+            if distance[u] + weight < distance[v]:
+                distance[v] = distance[u] + weight
+                previous[v] = u
+                heapq.heappush(pq, (distance[v], v))
+
+    if distance[destination] == INF:
+        print(f"There is no path from {cities[source]} to {cities[destination]}")
+    else:
+        print(f"The shortest distance from {cities[source]} to {cities[destination]} is {distance[destination]}")
+        
+        # Reconstruct the path
+        path = []
+        at = destination
+        while at != -1:
+            path.append(cities[at])
+            at = previous[at]
+        path.reverse()
+
+        print("Path: " + " -> ".join(path))
+
+def main():
+    cities = [
+        "Delhi", "Jaipur", "Lucknow", "Mumbai", "Ahmedabad",
+        "Pune", "Bangalore", "Hyderabad", "Chennai", "Kolkata",
+        "Chandigarh", "Surat", "Indore", "Trichy"
+    ]
+    
+    cityIndex = {city: i for i, city in enumerate(cities)}
+    
+    graph = [[] for _ in range(len(cities))]
+
+    # Adding edges between cities
+    graph[cityIndex["Delhi"]].append((cityIndex["Jaipur"], 5))
+    graph[cityIndex["Delhi"]].append((cityIndex["Lucknow"], 8))
+    graph[cityIndex["Jaipur"]].append((cityIndex["Delhi"], 5))
+    graph[cityIndex["Jaipur"]].append((cityIndex["Ahmedabad"], 6))
+    graph[cityIndex["Jaipur"]].append((cityIndex["Mumbai"], 8))
+    graph[cityIndex["Lucknow"]].append((cityIndex["Delhi"], 8))
+    graph[cityIndex["Lucknow"]].append((cityIndex["Kolkata"], 10))
+    graph[cityIndex["Mumbai"]].append((cityIndex["Pune"], 2))
+    graph[cityIndex["Mumbai"]].append((cityIndex["Ahmedabad"], 4))
+    graph[cityIndex["Mumbai"]].append((cityIndex["Jaipur"], 8))
+    graph[cityIndex["Ahmedabad"]].append((cityIndex["Jaipur"], 6))
+    graph[cityIndex["Ahmedabad"]].append((cityIndex["Mumbai"], 4))
+    graph[cityIndex["Ahmedabad"]].append((cityIndex["Pune"], 7))
+    graph[cityIndex["Pune"]].append((cityIndex["Mumbai"], 2))
+    graph[cityIndex["Pune"]].append((cityIndex["Bangalore"], 6))
+    graph[cityIndex["Pune"]].append((cityIndex["Hyderabad"], 8))
+    graph[cityIndex["Bangalore"]].append((cityIndex["Pune"], 6))
+    graph[cityIndex["Bangalore"]].append((cityIndex["Hyderabad"], 4))
+    graph[cityIndex["Bangalore"]].append((cityIndex["Chennai"], 5))
+    graph[cityIndex["Hyderabad"]].append((cityIndex["Pune"], 8))
+    graph[cityIndex["Hyderabad"]].append((cityIndex["Bangalore"], 4))
+    graph[cityIndex["Hyderabad"]].append((cityIndex["Chennai"], 5))
+    graph[cityIndex["Chennai"]].append((cityIndex["Bangalore"], 5))
+    graph[cityIndex["Chennai"]].append((cityIndex["Hyderabad"], 5))
+    graph[cityIndex["Chennai"]].append((cityIndex["Kolkata"], 8))
+    graph[cityIndex["Kolkata"]].append((cityIndex["Lucknow"], 10))
+    graph[cityIndex["Kolkata"]].append((cityIndex["Chennai"], 8))
+    
+    # Adding new edges for the new cities
+    graph[cityIndex["Delhi"]].append((cityIndex["Chandigarh"], 3))
+    graph[cityIndex["Chandigarh"]].append((cityIndex["Delhi"], 3))
+    graph[cityIndex["Surat"]].append((cityIndex["Mumbai"], 6))
+    graph[cityIndex["Indore"]].append((cityIndex["Mumbai"], 5))
+    graph[cityIndex["Jaipur"]].append((cityIndex["Chandigarh"], 4))
+    graph[cityIndex["Jaipur"]].append((cityIndex["Surat"], 7))
+    graph[cityIndex["Indore"]].append((cityIndex["Bangalore"], 9))
+    graph[cityIndex["Trichy"]].append((cityIndex["Chennai"], 6))
+    graph[cityIndex["Chennai"]].append((cityIndex["Trichy"], 6))
+
+    print("List of all cities:")
+    for city in cities:
+        print(f"- {city}")
+    print()
+
+    sourceCity = input("Enter the source city (e.g., Delhi): ")
+    destinationCity = input("Enter the destination city (e.g., Mumbai): ")
+
+    if sourceCity not in cityIndex or destinationCity not in cityIndex:
+        print("Invalid city name. Please enter a valid Indian city from the list.")
+        return
+
+    source = cityIndex[sourceCity]
+    destination = cityIndex[destinationCity]
+    
+    dijkstra(graph, source, destination, cities)
+
+if __name__ == "__main__":
+    main()
